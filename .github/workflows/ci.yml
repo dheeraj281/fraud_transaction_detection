@@ -33,9 +33,13 @@ jobs:
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: $(pwd)/gcp-key.json
 
       - name: Pull dataset with DVC
         run: dvc pull fraud_transaction_detection/datasets.dvc
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: $(pwd)/gcp-key.json
 
       - name: Run hyperparameter tuning
         run: python fraud_transaction_detection/tune_model.py
