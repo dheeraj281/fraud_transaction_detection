@@ -71,5 +71,5 @@ docker-deploy:
 	docker build -t fraud_transaction_detection_api_image fraud_transaction_detection_api/
 	@echo "🎉 Docker image built successfully!"
 	@echo "🚢 Running the Docker container..."
-	docker run -d --name bike_sharing_api_container -p 8000:8000 fraud_transaction_detection_api_image
+	docker run -d --name fraud_detection_container -p 8000:8000 fraud_transaction_detection_api_image
 	@echo "✅ Deployment successful! 🎯 Your API is running at http://localhost:8000 🚀"
