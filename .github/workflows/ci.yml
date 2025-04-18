@@ -1,0 +1,110 @@
+name: ML Pipeline with DVC, Training, and Docker
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 * * * *'
+
+jobs:
+  hyperparameter-tuning-and-training:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements/requirements.txt
+          pip install -r requirements/test_requirements.txt
+          pip install -e .
+          pip install dvc[gcs] build wheel
+
+      - name: Set up GCP credentials
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json
+
+      - name: Pull dataset with DVC
+        run: dvc pull fraud_transaction_detection/datasets.dvc
+
+      - name: Run hyperparameter tuning
+        run: python fraud_transaction_detection/tune_model.py
+
+      - name: Train model
+        run: python fraud_transaction_detection/train_pipeline.py
+
+      - name: Test model
+        run: python fraud_transaction_detection/predict.py
+
+      - name: Upload trained model
+        uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: fraud_transaction_detection/trained_models/
+
+  build-package:
+    needs: hyperparameter-tuning-and-training
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Download trained model
+        uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+          path: fraud_transaction_detection/trained_models/
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel
+
+      - name: Build package
+        run: python -m build
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-package
+          path: dist/
+
+  build-and-push-docker:
+    needs: build-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download model package
+        uses: actions/download-artifact@v4
+        with:
+          name: model-package
+          path: fraud_transaction_detection_api/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME_DJ }}
+          password: ${{ secrets.DOCKERHUB_TOKEN_DJ }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./fraud_transaction_detection_api
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME_DJ }}/fraud_transaction_detection_api:latest
