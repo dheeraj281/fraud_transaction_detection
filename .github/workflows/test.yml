@@ -22,6 +22,6 @@ jobs:
           pip install dvc[gcs] build wheel
           pip install dvc-gs
       - name: Modify DVC Remote
-        run: dvc remote modify - local myremote credentialpath credentials_1.json
+        run: dvc remote modify --local myremote credentialpath credentials_1.json
       - name: DVC Pull Data
         run: dvc pull -v
