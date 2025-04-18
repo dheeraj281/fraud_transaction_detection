@@ -29,16 +29,15 @@ jobs:
           pip install dvc[gcs] build wheel
           pip install dvc-gs
 
-      - name: Set up GCP credentials
-        run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/gcp-key.json
+      - name: Create credentials.json
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: $(pwd)/gcp-key.json
+          GDRIVE_CREDENTIALS_DATA: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        run: echo $GDRIVE_CREDENTIALS_DATA > credentials_1.json
+        
+      - name: Modify DVC Remote
+        run: dvc remote modify - local myremote credentialpath credentials_1.json
 
       - name: Pull dataset with DVC
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: $(pwd)/gcp-key.json
         run: dvc pull fraud_transaction_detection/datasets.dvc
 
       - name: Run hyperparameter tuning
