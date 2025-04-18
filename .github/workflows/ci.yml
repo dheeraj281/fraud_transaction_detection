@@ -35,7 +35,7 @@ jobs:
         run: echo $GDRIVE_CREDENTIALS_DATA > credentials_1.json
         
       - name: Modify DVC Remote
-        run: dvc remote modify - local myremote credentialpath credentials_1.json
+        run: dvc remote modify --local myremote credentialpath credentials_1.json
 
       - name: Pull dataset with DVC
         run: dvc pull fraud_transaction_detection/datasets.dvc
