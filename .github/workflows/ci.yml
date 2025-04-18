@@ -27,6 +27,7 @@ jobs:
           pip install -r requirements/test_requirements.txt
           pip install -e .
           pip install dvc[gcs] build wheel
+          pip install dvc-gs
 
       - name: Set up GCP credentials
         run: |
