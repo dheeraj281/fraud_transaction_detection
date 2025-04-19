@@ -106,9 +106,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME_DJ }}
           password: ${{ secrets.DOCKERHUB_TOKEN_DJ }}
 
-      - name: Build and push Docker image
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Login to AWS ECR
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: Build and push Docker image to Docker Hub and ECR
         uses: docker/build-push-action@v4
         with:
           context: ./fraud_transaction_detection_api
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME_DJ }}/fraud_transaction_detection_api:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME_DJ }}/fraud_transaction_detection_api:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/fraud_transaction_detection_api:latest
+
