@@ -123,6 +123,6 @@ jobs:
           context: ./fraud_transaction_detection_api
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME_DJ }}/fraud_transaction_detection_api:latest
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/fraud_transaction_detection_api:latest
+            ${{ secrets.DOCKERHUB_USERNAME_DJ }}/fraud-detection-model-repo:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-south-1.amazonaws.com/fraud-detection-model-repo:latest
 
