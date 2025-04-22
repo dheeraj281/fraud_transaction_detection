@@ -1,7 +1,24 @@
-# Fraud Transaction Detection 
+### 🛡️ Project Overview:  Fraud Detection System using AWS (ECR, ECS, Lambda) and DVC
 
-## 🚀 Project Overview
-### Fraud Transaction Prediction is a machine learning project that predicts a transaction is froud or not based on various input features. 
+**Fraud Transaction Prediction** is a machine learning project aimed at identifying fraudulent bank transactions using various input features. The project uses a supervised learning approach with a **Random Forest Regression model**, which achieved an accuracy of **99%** on the labeled dataset.
+
+### 🧰 Tools & Technologies
+- **Amazon ECR & ECS**: Docker image is built for a FastAPI application and pushed to **Amazon ECR**. Deployment is handled through **Amazon ECS**.
+- **DVC (Data Version Control)**: Used for versioning datasets stored in **Google Cloud Storage**.
+- **Optuna**: Employed for hyperparameter tuning to identify the best model configuration.
+- **GitHub Actions**: CI/CD pipeline automates the workflow.
+
+### ⚙️ CI/CD Pipeline Workflow
+1. Pipeline is triggered in GitHub Actions.
+2. Data is pulled from **Google Cloud Storage** using DVC.
+3. **Optuna** performs hyperparameter tuning to find the best parameters.
+4. The model is trained using these optimal parameters.
+5. A **Docker image** is built for the FastAPI app and pushed to **Amazon ECR**.
+6. An **Amazon EventBridge** rule (previously CloudWatch Events) detects the new image push.
+7. This triggers an **AWS Lambda function**, which is configured with the ECS **cluster**, **service**, and **task definition** details.
+8. The Lambda function deploys the latest image to the ECS service automatically.
+
+---
 
 ## 🛠 Setup Instructions
 To get started, clone the repository and run the following command to set up the environment:
